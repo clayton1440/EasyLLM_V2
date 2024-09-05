@@ -1,0 +1,58 @@
+CREATE TABLE IF NOT EXISTS Users (
+	Username TEXT PRIMARY KEY,
+	IsAdmin INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS Materials (
+	ReferenceNumber INTEGER PRIMARY KEY,
+	PartNumber TEXT NOT NULL,
+	PartDescription TEXT NOT NULL,
+	LotNumber TEXT NOT NULL,
+	ExpirationDate TEXT,
+	DisplayAutoRef INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS UserStock (
+	ReferenceNumber INTEGER,
+	CheckedOutUser TEXT,
+	CheckedOutTimestamp TIMESTAMP,
+	FOREIGN KEY (ReferenceNumber) REFERENCES Materials(ReferenceNumber)
+);
+
+CREATE TABLE IF NOT EXISTS ProgramStock (
+	ReferenceNumber INTEGER,
+	QtyPerUse NUMERIC NOT NULL DEFAULT 0,
+	QtyRemaining NUMERIC DEFAULT 1,
+	FOREIGN KEY (ReferenceNumber) REFERENCES Materials(ReferenceNumber)
+);
+
+CREATE TABLE IF NOT EXISTS CommonStock (
+	ReferenceNumber INTEGER,
+	FOREIGN KEY (ReferenceNumber) REFERENCES Materials(ReferenceNumber)
+);
+
+CREATE TABLE IF NOT EXISTS UsageHist (
+	UID INTEGER PRIMARY KEY AUTOINCREMENT,
+	Username TEXT NOT NULL,
+	ReferenceNumber INTEGER NOT NULL,
+	PartNumber TEXT NOT NULL,
+	LotNumber TEXT NOT NULL,
+	ShopOrder TEXT,
+	UseTimestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	QtyUsed NUMERIC DEFAULT 0,
+	IsCheckOut INTEGER DEFAULT 0,
+	IsCheckIn INTEGER DEFAULT 0,
+	IsFinalCheckIn INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS AutoPart (
+	PartNumber TEXT PRIMARY KEY,
+	PartDescription TEXT NOT NULL
+);
+
+CREATE INDEX "idx_RefNum-UserStock" ON "UserStock" ("ReferenceNumber");
+CREATE INDEX "idx_RefNum-ProgramStock" ON "ProgramStock" ("ReferenceNumber");
+CREATE INDEX "idx_RefNum-CommonStock" ON "CommonStock" ("ReferenceNumber");
+CREATE INDEX "idx_RefNum-Materials" ON "Materials" ("ReferenceNumber");
+
+INSERT INTO Users (Username, IsAdmin) VALUES ('@CurrentUser', 1);
